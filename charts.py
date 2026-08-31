@@ -624,12 +624,11 @@ def depth_chart(
 def offer_percentile(bod, bmu, unit_id, stacks=None):
     stacks = stacks if stacks is not None else all_merit_orders(bod, bmu)
 
-    posted = set(  # periods where the unit submitted anything at all
-        bod.loc[
-            (bod["nationalGridBmUnit"] == unit_id) & (bod["pairId"] > 0),
-            "settlementPeriod",
-        ]
-    )
+    mine_all = bod[(bod["nationalGridBmUnit"] == unit_id) & (bod["pairId"] > 0)]
+    posted = set(mine_all["settlementPeriod"])
+    # cheapest offer before the refusal filter, so a unit that priced itself out
+    # can be told apart from one that had no room to offer
+    raw_cheapest = mine_all.groupby("settlementPeriod")["offer"].min()
 
     rows = []
     for p, o in stacks.items():
@@ -657,8 +656,8 @@ def offer_percentile(bod, bmu, unit_id, stacks=None):
                 "fleet_median": median,
                 "fleet_q75": q75,
                 "n_units": bat["nationalGridBmUnit"].nunique(),
-                # absent means it posted nothing or had no headroom
                 "no_post": p not in posted,
+                "priced_out": raw_cheapest.get(p, float("nan")) >= 2000,
             }
         )
 
@@ -667,7 +666,6 @@ def offer_percentile(bod, bmu, unit_id, stacks=None):
 
 # weighted by band volume so a unit posting five bands is not counted five times
 def _weighted_quantiles(bat, qs):
-
     d = bat.sort_values("offer")
     cum = d["vols"].cumsum() / d["vols"].sum()
     return [d.loc[cum >= q, "offer"].iloc[0] for q in qs]
@@ -757,15 +755,20 @@ def offer_percentile_chart(pct, unit_id, date):
 
     absent = d[d["my_offer"].isna()]
     no_post = int(absent["no_post"].fillna(True).sum())
-    no_room = len(absent) - no_post
+    priced_out = int(
+        (absent["priced_out"].fillna(False) & ~absent["no_post"].fillna(True)).sum()
+    )
+    no_room = len(absent) - no_post - priced_out
 
     bits = []
     if no_post:
-        bits.append(f"{no_post} periods where it posted no offer")
+        bits.append(f"{no_post} where it posted no offer")
+    if priced_out:
+        bits.append(f"{priced_out} where it priced itself out of the stack")
     if no_room:
-        bits.append(f"{no_room} periods where it had no headroom above its FPN")
+        bits.append(f"{no_room} where it had no headroom above its FPN")
     if bits:
-        subtitle += "<br>Gaps are " + " and ".join(bits) + "."
+        subtitle += "<br>Gaps are " + ", ".join(bits) + "."
 
     fig.update_layout(
         title=dict(

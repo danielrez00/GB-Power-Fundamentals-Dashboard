@@ -197,11 +197,10 @@ THURB-3 posted a median cheapest offer of £199 against a fleet median of £194,
 so it sat at 42 percent of fleet offer volume across the day. It priced within
 consensus rather than taking a distinct view.
 
-The lines break for eighteen periods, from 10:30 to 19:30. THURB-3 posted
-bid-offer data in all of them and had no headroom above its FPN in any of them,
-so every band was capped out by the MEL test and the unit drops out of the stack.
-Read with the MEL profile above, that is a unit unavailable to the energy market
-rather than one pricing itself out.
+The lines break for eighteen periods. THURB-3 posted bid-offer data in every one of 
+them. In eleven it had headroom and priced itself out, offering above £2,000 so the 
+band never reaches the stack. In the other seven it was pinned at its declared MEL, 
+with every band capped out by the headroom test.
 
 ### Battery Fleet Declared Availability
 
