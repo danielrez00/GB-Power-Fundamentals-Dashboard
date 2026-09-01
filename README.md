@@ -4,6 +4,8 @@ A Streamlit dashboard built on Elexon's Insights API, covering the declared
 generation stack, the balancing offer stack, and GB battery fleet behaviour.
 Runs on cached days or live against the current settlement period.
 
+Accessible here: [https://gb-power-fundamentals-dashboard.streamlit.app/ ](https://gb-power-fundamentals-dashboard.streamlit.app/)
+
 **Generation**
 
 1. Declared position by fuel type, with the market index price overlaid
